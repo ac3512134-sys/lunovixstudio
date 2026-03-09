@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Pomodo Focus — Lunovix Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ng:#00ff9f;--nc:#00e5ff;--np:#ff00aa;--ny:#ffe600;--npu:#bf00ff;
+  --bg:#030912;--card:rgba(4,16,36,0.94);
+  --gl:rgba(0,229,255,0.04);--dim:rgba(200,230,255,0.5);
+  --t:.22s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:#cce8ff;overflow-x:hidden;min-height:100vh;}
+
+/* ── DEEP SPACE BG ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,20,60,0.8) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 20% 80%,rgba(40,0,80,0.5) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 60%,rgba(0,40,80,0.4) 0%,transparent 60%),
+    linear-gradient(180deg,#020a1a 0%,#030912 100%);
+}
+/* Grid */
+body::after{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(var(--gl) 1px,transparent 1px),linear-gradient(90deg,var(--gl) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+/* Stars */
+.stars{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden;}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle linear infinite;}
+@keyframes twinkle{0%,100%{opacity:0.2;transform:scale(1);}50%{opacity:1;transform:scale(1.4);}}
+/* Scanlines */
+.scanlines{position:fixed;inset:0;z-index:3;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.055) 2px,rgba(0,0,0,.055) 4px);
+  animation:scanshift 14s linear infinite;}
+@keyframes scanshift{to{background-position:0 100px;}}
+/* Rain */
+.rain{position:fixed;width:100%;height:100%;pointer-events:none;z-index:4;}
+.drop{position:absolute;width:1px;height:20px;background:linear-gradient(transparent,rgba(0,229,255,.18));animation:raindrop linear infinite;}
+@keyframes raindrop{to{transform:translateY(100vh);}}
+/* Particles */
+.particle{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;animation:pfly .85s ease-out forwards;}
+@keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}}
+/* Toast */
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(2,12,28,.97);border:1px solid var(--nc);border-radius:6px;padding:10px 24px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--nc);z-index:99999;transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:0 0 30px rgba(0,229,255,.18),0 4px 20px rgba(0,0,0,.5);letter-spacing:1px;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:600;height:52px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+  background:rgba(2,8,22,.9);border-bottom:1px solid rgba(0,229,255,.12);
+  backdrop-filter:blur(20px);
+  box-shadow:0 2px 40px rgba(0,0,0,.5),0 1px 0 rgba(0,229,255,.06);
+}
+/* Cursive brand */
+.studio-brand{display:flex;align-items:center;gap:10px;}
+.studio-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,#0af,#a0f);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:#fff;
+  box-shadow:0 0 18px rgba(0,200,255,.45),0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2);
+  position:relative;
+}
+.studio-icon::after{content:'';position:absolute;inset:2px;border-radius:6px;border:1px solid rgba(255,255,255,.15);}
+.studio-name{
+  font-family:'Great Vibes',cursive;
+  font-size:26px;
+  background:linear-gradient(135deg,#00e5ff 0%,#ffffff 45%,#bf00ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 8px rgba(0,229,255,.4));
+  letter-spacing:1px;
+}
+.studio-tagline{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:2px;margin-top:-4px;text-transform:uppercase;}
+
+/* Topbar right cluster */
+.topbar-right{display:flex;align-items:center;gap:8px;}
+
+/* Mini leaderboard in topbar */
+.topbar-lb{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,255,159,.05);border:1px solid rgba(0,255,159,.18);
+  border-radius:20px;padding:4px 12px 4px 8px;cursor:pointer;
+  transition:all var(--t);position:relative;
+}
+.topbar-lb:hover{background:rgba(0,255,159,.1);}
+.topbar-lb .lb-icon{font-size:13px;}
+.topbar-lb .lb-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--ng);letter-spacing:1px;}
+.topbar-lb .lb-rank{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--ny);}
+
+/* Mini LB dropdown */
+.lb-dropdown{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;width:240px;
+  background:rgba(3,14,32,.97);border:1px solid rgba(0,255,159,.18);border-radius:8px;
+  padding:12px;z-index:700;box-shadow:0 8px 40px rgba(0,0,0,.6),0 0 20px rgba(0,255,159,.08);
+  animation:fadeIn .2s ease;
+}
+.lb-dropdown.open{display:block;}
+.lb-drop-title{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--ng);margin-bottom:8px;}
+.lb-drop-row{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:10px;margin-bottom:3px;transition:background var(--t);}
+.lb-drop-row:hover{background:rgba(0,255,159,.05);}
+.lb-drop-row.me{background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.12);}
+.lb-drop-rank{font-family:'Orbitron',monospace;font-size:11px;min-width:20px;}
+.lb-drop-name{flex:1;color:#cce8ff;}
+.lb-drop-score{color:var(--ng);font-family:'Orbitron',monospace;font-size:10px;}
+
+.user-pill{display:flex;align-items:center;gap:6px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.16);border-radius:20px;padding:4px 12px 4px 6px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--nc);cursor:pointer;transition:all var(--t);}
+.user-pill:hover{background:rgba(0,229,255,.12);}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--nc),var(--np));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;box-shadow:0 0 8px rgba(0,229,255,.3);}
+.btn-logout{font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px 11px;background:rgba(255,0,80,.07);border:1px solid rgba(255,0,80,.22);border-radius:14px;color:#ff4466;cursor:pointer;transition:all var(--t);letter-spacing:1px;}
+.btn-logout:hover{background:rgba(255,0,80,.16);}
+
+/* ═══════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════ */
+#loginOverlay{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;animation:fadeIn .4s ease;}
+#loginOverlay::before{content:'';position:absolute;inset:0;background:rgba(2,6,18,.96);backdrop-filter:blur(4px);}
+.login-box{
+  width:400px;max-width:92%;padding:38px 34px;
+  background:linear-gradient(135deg,rgba(4,18,42,.97) 0%,rgba(2,10,28,.97) 100%);
+  border:1px solid rgba(0,229,255,.2);border-radius:12px;
+  box-shadow:0 0 80px rgba(0,229,255,.07),0 20px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);
+  position:relative;z-index:1;animation:fadeUp .5s ease;
+}
+.login-box::before,.login-box::after{content:'';position:absolute;width:22px;height:22px;border-color:var(--nc);border-style:solid;}
+.login-box::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.login-box::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-brand{font-family:'Great Vibes',cursive;font-size:40px;background:linear-gradient(135deg,var(--nc),#fff,var(--npu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 10px rgba(0,229,255,.35));}
+.login-sub{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--nc);text-shadow:0 0 14px rgba(0,229,255,.4);margin-top:2px;}
+.login-desc{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;margin-top:4px;}
+.login-tabs{display:flex;gap:3px;margin-bottom:20px;background:rgba(0,10,25,.7);border:1px solid rgba(0,229,255,.1);border-radius:6px;padding:3px;}
+.login-tab{flex:1;padding:7px;border:none;background:transparent;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);cursor:pointer;border-radius:4px;transition:all var(--t);}
+.login-tab.active{background:rgba(0,229,255,.13);color:var(--nc);box-shadow:0 2px 8px rgba(0,229,255,.12);}
+.login-field{margin-bottom:13px;}
+.login-field label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;display:block;margin-bottom:5px;text-transform:uppercase;}
+.login-field input{
+  width:100%;padding:11px 13px;
+  background:rgba(0,10,30,.85);border:1px solid rgba(0,229,255,.16);border-radius:6px;
+  color:#cce8ff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;
+  transition:all var(--t);box-shadow:inset 0 2px 8px rgba(0,0,0,.3);
+}
+.login-field input:focus{border-color:var(--nc);box-shadow:0 0 14px rgba(0,229,255,.12),inset 0 2px 8px rgba(0,0,0,.3);}
+.login-err{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--np);text-align:center;margin-top:8px;min-height:14px;}
+
+/* ═══════════════════════════════════════
+   3D BUTTONS — ULTRA
+═══════════════════════════════════════ */
+.btn3{
+  position:relative;font-family:'Orbitron',monospace;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;
+  transition:all .14s ease;user-select:none;display:inline-block;overflow:hidden;
+}
+.btn3::before{content:'';position:absolute;inset:0;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.14) 0%,transparent 50%);pointer-events:none;}
+.btn3::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 6px 6px;background:rgba(0,0,0,.3);pointer-events:none;}
+.btn3-cyan{
+  background:linear-gradient(180deg,rgba(0,229,255,.3),rgba(0,160,200,.2));
+  color:var(--nc);border:1px solid rgba(0,229,255,.5);
+  box-shadow:0 8px 0 rgba(0,80,120,.7),0 10px 20px rgba(0,0,0,.4),0 0 24px rgba(0,229,255,.12),inset 0 1px 0 rgba(255,255,255,.12);
+  text-shadow:0 0 10px rgba(0,229,255,.6);
+}
+.btn3-cyan:hover{transform:translateY(-2px);box-shadow:0 10px 0 rgba(0,80,120,.7),0 14px 28px rgba(0,0,0,.4),0 0 32px rgba(0,229,255,.2);}
+.btn3-cyan:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(0,80,120,.7),0 4px 10px rgba(0,0,0,.4);}
+.btn3-green{
+  background:linear-gradient(180deg,rgba(0,255,159,.28),rgba(0,180,110,.18));
+  color:var(--ng);border:1px solid rgba(0,255,159,.5);
+  box-shadow:0 8px 0 rgba(0,90,50,.7),0 10px 20px rgba(0,0,0,.4),0 0 22px rgba(0,255,159,.1),inset 0 1px 0 rgba(255,255,255,.1);
+  text-shadow:0 0 10px rgba(0,255,159,.5);
+}
+.btn3-green:hover{transform:translateY(-2px);box-shadow:0 10px 0 rgba(0,90,50,.7),0 14px 28px rgba(0,0,0,.4),0 0 30px rgba(0,255,159,.18);}
+.btn3-green:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(0,90,50,.7);}
+.btn3-pink{
+  background:linear-gradient(180deg,rgba(255,0,170,.25),rgba(160,0,110,.18));
+  color:var(--np);border:1px solid rgba(255,0,170,.45);
+  box-shadow:0 8px 0 rgba(110,0,70,.7),0 10px 20px rgba(0,0,0,.4),0 0 20px rgba(255,0,170,.1),inset 0 1px 0 rgba(255,255,255,.1);
+  text-shadow:0 0 10px rgba(255,0,170,.5);
+}
+.btn3-pink:hover{transform:translateY(-2px);box-shadow:0 10px 0 rgba(110,0,70,.7),0 14px 28px rgba(0,0,0,.4),0 0 28px rgba(255,0,170,.18);}
+.btn3-pink:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(110,0,70,.7);}
+.btn3-yellow{
+  background:linear-gradient(180deg,rgba(255,230,0,.22),rgba(180,160,0,.15));
+  color:var(--ny);border:1px solid rgba(255,230,0,.4);
+  box-shadow:0 8px 0 rgba(110,90,0,.7),0 10px 20px rgba(0,0,0,.4),0 0 18px rgba(255,230,0,.08),inset 0 1px 0 rgba(255,255,255,.1);
+  text-shadow:0 0 8px rgba(255,230,0,.4);
+}
+.btn3-yellow:hover{transform:translateY(-2px);box-shadow:0 10px 0 rgba(110,90,0,.7),0 14px 28px rgba(0,0,0,.4);}
+.btn3-yellow:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(110,90,0,.7);}
+.btn3-purple{
+  background:linear-gradient(180deg,rgba(191,0,255,.22),rgba(120,0,180,.15));
+  color:var(--npu);border:1px solid rgba(191,0,255,.4);
+  box-shadow:0 8px 0 rgba(90,0,130,.7),0 10px 20px rgba(0,0,0,.4),0 0 18px rgba(191,0,255,.1),inset 0 1px 0 rgba(255,255,255,.1);
+  text-shadow:0 0 8px rgba(191,0,255,.5);
+}
+.btn3-purple:hover{transform:translateY(-2px);box-shadow:0 10px 0 rgba(90,0,130,.7),0 14px 28px rgba(0,0,0,.4),0 0 26px rgba(191,0,255,.18);}
+.btn3-purple:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(90,0,130,.7);}
+.btn3-lg{font-size:13px;padding:14px 34px;}
+.btn3-md{font-size:10px;padding:10px 20px;}
+.btn3-sm{font-size:8px;padding:8px 14px;letter-spacing:1.5px;border-radius:5px;}
+.btn3-full{width:100%;text-align:center;}
+
+/* ═══════════════════════════════════════
+   LAYOUT — 3-COLUMN WHEN WIDE
+═══════════════════════════════════════ */
+#appRoot{display:none;padding-top:52px;}
+.app-layout{
+  position:relative;min-height:calc(100vh - 52px);
+  display:grid;
+  grid-template-columns:280px 1fr 280px;
+  grid-template-rows:1fr;
+  gap:0;
+  align-items:start;
+  padding:24px 20px;
+  max-width:1400px;
+  margin:0 auto;
+}
+/* On smaller screens collapse */
+@media(max-width:1100px){
+  .app-layout{grid-template-columns:1fr;padding:16px;}
+  .side-left,.side-right{width:100%;position:relative;top:auto;}
+}
+
+/* ── CENTER ── */
+.center-col{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:10px;}
+.container{
+  width:100%;max-width:480px;padding:26px 24px 22px;border-radius:12px;
+  background:linear-gradient(160deg,rgba(4,18,44,.96) 0%,rgba(2,12,30,.96) 100%);
+  border:1px solid rgba(0,229,255,.18);
+  box-shadow:0 0 60px rgba(0,229,255,.06),0 20px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);
+  position:relative;animation:fadeUp .5s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.container::before,.container::after{content:'';position:absolute;width:20px;height:20px;border-color:var(--nc);border-style:solid;}
+.container::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.container::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.app-header{text-align:center;margin-bottom:14px;}
+h1{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--nc);text-shadow:0 0 20px rgba(0,229,255,.6);margin-bottom:2px;}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1.5px;}
+
+/* TABS */
+.nav-tabs{display:flex;gap:2px;margin-bottom:13px;background:rgba(0,8,22,.7);border:1px solid rgba(0,229,255,.09);border-radius:6px;padding:3px;}
+.nav-tab{flex:1;padding:6px 2px;border:none;background:transparent;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.3px;text-transform:uppercase;color:var(--dim);cursor:pointer;border-radius:4px;transition:all var(--t);}
+.nav-tab.active{background:rgba(0,229,255,.12);color:var(--nc);text-shadow:0 0 8px rgba(0,229,255,.3);box-shadow:0 2px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);}
+.nav-tab:hover:not(.active){color:#cce8ff;}
+.panel{display:none;animation:fadeIn .24s ease;}
+.panel.active{display:block;}
+
+/* MODE BUTTONS */
+.mode{display:flex;gap:5px;justify-content:center;margin-bottom:13px;flex-wrap:wrap;}
+.mode-btn{
+  font-family:'Orbitron',monospace;font-size:8px;letter-spacing:1px;padding:8px 12px;border-radius:6px;
+  background:linear-gradient(180deg,rgba(0,10,30,.9),rgba(0,5,18,.9));
+  color:var(--dim);cursor:pointer;transition:all .14s ease;text-transform:uppercase;
+  border:1px solid rgba(0,229,255,.16);
+  box-shadow:0 4px 0 rgba(0,20,50,.7),0 6px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.mode-btn:hover{border-color:var(--nc);color:var(--nc);transform:translateY(-1px);box-shadow:0 5px 0 rgba(0,20,50,.7),0 8px 16px rgba(0,0,0,.4);}
+.mode-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,20,50,.7);}
+.mode-btn.active{
+  background:linear-gradient(180deg,rgba(0,229,255,.18),rgba(0,160,200,.12));
+  border-color:rgba(0,229,255,.5);color:var(--nc);
+  text-shadow:0 0 8px rgba(0,229,255,.4);
+  box-shadow:0 5px 0 rgba(0,60,100,.7),0 8px 18px rgba(0,0,0,.4),0 0 14px rgba(0,229,255,.12),inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* TIMER */
+.timer-wrap{text-align:center;margin:4px 0 10px;}
+.timer{
+  font-family:'Orbitron',monospace;font-size:clamp(50px,12vw,70px);font-weight:900;color:#fff;letter-spacing:4px;display:inline-block;
+  text-shadow:0 0 30px rgba(0,229,255,.7),0 0 60px rgba(0,229,255,.22),0 2px 0 rgba(0,0,0,.5);
+  filter:drop-shadow(0 0 15px rgba(0,229,255,.4));
+}
+.timer.pulse{animation:tpulse .4s ease;}
+@keyframes tpulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+.session-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-top:2px;}
+
+/* PROGRESS */
+.progress{height:4px;background:rgba(255,255,255,.06);overflow:visible;position:relative;margin-bottom:12px;border-radius:2px;}
+.bar{height:100%;width:0%;background:linear-gradient(90deg,var(--nc),rgba(0,255,200,.8));box-shadow:0 0 12px var(--nc),0 0 4px #fff;transition:width .5s linear;position:relative;border-radius:2px;}
+.bar::after{content:'';position:absolute;right:-4px;top:-4px;width:8px;height:8px;background:var(--nc);border-radius:50%;box-shadow:0 0 12px var(--nc),0 0 4px #fff;}
+
+.quote{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.8px;margin-bottom:11px;min-height:12px;text-align:center;font-style:italic;}
+
+/* CONTROLS */
+.controls{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.stat-card{
+  background:linear-gradient(135deg,rgba(0,12,32,.9),rgba(0,8,22,.9));
+  border:1px solid rgba(0,229,255,.1);border-radius:8px;padding:10px;text-align:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04);
+  transition:all var(--t);
+}
+.stat-card:hover{border-color:rgba(0,229,255,.22);box-shadow:0 4px 18px rgba(0,0,0,.4),0 0 14px rgba(0,229,255,.06);}
+.s-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;margin-bottom:3px;}
+.s-val{font-family:'Orbitron',monospace;font-size:19px;font-weight:700;color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.28);}
+.s-unit{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);}
+.goal-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);}
+.goal-row .g-val{color:var(--ng);margin-left:auto;}
+.goal-pw{height:3px;background:rgba(255,255,255,.05);overflow:hidden;border-radius:2px;margin-bottom:8px;}
+.goal-pf{height:100%;background:linear-gradient(90deg,var(--ng),var(--nc));box-shadow:0 0 7px var(--ng);transition:width .6s ease;}
+.goal-ir{display:flex;gap:5px;margin-bottom:10px;}
+.goal-ir input{flex:1;padding:7px 9px;background:rgba(0,10,30,.8);border:1px solid rgba(0,229,255,.14);border-radius:5px;color:var(--nc);font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;}
+.goal-ir input:focus{border-color:var(--nc);}
+.chart-title{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--np);margin-bottom:8px;}
+.chart-wrap{background:linear-gradient(135deg,rgba(0,5,18,.7),rgba(0,8,22,.7));border:1px solid rgba(0,229,255,.07);border-radius:8px;padding:12px 9px 7px;box-shadow:inset 0 2px 8px rgba(0,0,0,.3);}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:76px;margin-bottom:4px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.bar-fill{width:100%;border-radius:3px 3px 0 0;min-height:3px;background:linear-gradient(to top,var(--nc),rgba(0,229,255,.22));box-shadow:0 0 8px rgba(0,229,255,.22);transition:height .6s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer;}
+.bar-fill:hover{filter:brightness(1.35);}
+.bar-fill .bar-tip{display:none;position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,16,38,.97);border:1px solid rgba(0,229,255,.2);padding:3px 7px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--nc);white-space:nowrap;z-index:10;}
+.bar-fill:hover .bar-tip{display:block;}
+.bar-label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);}
+
+/* ── MISSIONS ── */
+.panel-title{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.tasks-title{color:var(--np);}
+.sound-title{color:var(--npu);}
+.settings-title{color:var(--ny);}
+.task-inputs{display:flex;gap:5px;margin-bottom:6px;}
+.task-inputs input{flex:1;padding:8px 9px;background:rgba(0,10,30,.85);border:1px solid rgba(0,229,255,.13);border-radius:5px;color:#cce8ff;font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;box-shadow:inset 0 2px 6px rgba(0,0,0,.3);}
+.task-inputs input:focus{border-color:var(--nc);}
+.task{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:linear-gradient(135deg,rgba(0,10,28,.85),rgba(0,6,18,.85));border:1px solid rgba(0,229,255,.07);border-radius:6px;margin-bottom:5px;font-family:'Share Tech Mono',monospace;font-size:11px;transition:all var(--t);animation:slideIn .2s ease;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+.task.active-task{border-color:var(--ng);box-shadow:0 0 12px rgba(0,255,159,.08),0 2px 8px rgba(0,0,0,.3);}
+.task-btns button{padding:4px 8px;border-radius:5px;border:none;cursor:pointer;font-size:10px;margin-left:3px;transition:all .12s ease;}
+.tbtn-play{background:rgba(0,229,255,.1);color:var(--nc);border:1px solid rgba(0,229,255,.22)!important;box-shadow:0 2px 0 rgba(0,60,90,.5);}
+.tbtn-play:active{transform:translateY(2px);box-shadow:none;}
+.tbtn-del{background:rgba(255,0,80,.08);color:#ff4466;border:1px solid rgba(255,0,80,.2)!important;box-shadow:0 2px 0 rgba(90,0,30,.5);}
+.tbtn-del:active{transform:translateY(2px);box-shadow:none;}
+#total{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-top:4px;}
+.discord{text-align:center;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:9px;}
+.discord a{color:var(--np);text-decoration:none;letter-spacing:1px;}
+
+/* ── SOUND ── */
+.sound-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;}
+.sound-btn{
+  padding:11px 6px;border-radius:8px;cursor:pointer;transition:all .14s ease;text-align:center;
+  background:linear-gradient(180deg,rgba(100,0,180,.1),rgba(60,0,120,.08));
+  border:1px solid rgba(191,0,255,.16);
+  box-shadow:0 5px 0 rgba(60,0,100,.5),0 7px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.sound-btn:hover{border-color:rgba(191,0,255,.32);transform:translateY(-2px);box-shadow:0 7px 0 rgba(60,0,100,.5),0 10px 20px rgba(0,0,0,.4),0 0 14px rgba(191,0,255,.12);}
+.sound-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(60,0,100,.5);}
+.sound-btn.playing{border-color:var(--npu);background:linear-gradient(180deg,rgba(191,0,255,.18),rgba(120,0,180,.14));box-shadow:0 5px 0 rgba(80,0,130,.6),0 7px 16px rgba(0,0,0,.4),0 0 20px rgba(191,0,255,.15),inset 0 1px 0 rgba(255,255,255,.08);}
+.s-icon{font-size:18px;margin-bottom:3px;}
+.s-name{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.7px;text-transform:uppercase;color:#cce8ff;}
+.s-status{font-family:'Share Tech Mono',monospace;font-size:7.5px;color:var(--dim);margin-top:2px;}
+.sound-btn.playing .s-status{color:var(--npu);}
+.playing-dots{display:none;gap:2px;align-items:flex-end;height:9px;margin-left:2px;vertical-align:middle;}
+.sound-btn.playing .playing-dots{display:inline-flex;}
+.playing-dots span{width:2px;background:var(--npu);border-radius:1px;animation:swave .6s ease infinite;}
+.playing-dots span:nth-child(2){animation-delay:.14s;}
+.playing-dots span:nth-child(3){animation-delay:.28s;}
+@keyframes swave{0%,100%{height:2px;}50%{height:8px;}}
+.vol-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);}
+.vol-row input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:rgba(0,229,255,.1);outline:none;cursor:pointer;border-radius:2px;}
+.vol-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--nc);box-shadow:0 0 8px var(--nc);cursor:pointer;}
+
+/* ── BADGES ── */
+.badges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;}
+.badge{
+  background:linear-gradient(135deg,rgba(0,10,28,.9),rgba(0,5,16,.9));
+  border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:10px 6px;text-align:center;
+  transition:all var(--t);position:relative;overflow:hidden;
+  box-shadow:0 3px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.03);
+}
+.badge.unlocked{border-color:rgba(255,230,0,.28);background:linear-gradient(135deg,rgba(30,20,0,.9),rgba(15,10,0,.9));box-shadow:0 3px 14px rgba(0,0,0,.4),0 0 14px rgba(255,230,0,.06),inset 0 1px 0 rgba(255,255,255,.05);}
+.badge.unlocked:hover{border-color:rgba(255,230,0,.45);}
+.b-icon{font-size:20px;margin-bottom:3px;filter:grayscale(1);opacity:.2;transition:all var(--t);}
+.badge.unlocked .b-icon{filter:none;opacity:1;}
+.b-name{font-family:'Orbitron',monospace;font-size:6.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);margin-bottom:1px;}
+.badge.unlocked .b-name{color:var(--ny);}
+.b-desc{font-family:'Share Tech Mono',monospace;font-size:7px;color:rgba(200,230,255,.16);}
+.badge.unlocked .b-desc{color:rgba(200,230,255,.34);}
+.b-new{display:none;position:absolute;top:3px;right:3px;background:var(--np);border-radius:2px;padding:1px 4px;font-family:'Orbitron',monospace;font-size:6px;color:#fff;}
+.badge.show-new .b-new{display:block;}
+.badge.show-new{animation:badgePop .4s ease;}
+@keyframes badgePop{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+/* ── SETTINGS ── */
+.settings-section{background:linear-gradient(135deg,rgba(0,10,28,.85),rgba(0,6,18,.85));border:1px solid rgba(0,229,255,.07);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:inset 0 2px 8px rgba(0,0,0,.25);}
+.settings-section h4{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--nc);margin-bottom:10px;}
+.setting-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);}
+.setting-row:last-child{margin-bottom:0;}
+.setting-row label{flex:1;}
+.setting-row input[type=number]{width:60px;padding:5px 7px;background:rgba(0,10,30,.85);border:1px solid rgba(0,229,255,.14);border-radius:5px;color:var(--nc);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;text-align:center;}
+.setting-row input[type=number]:focus{border-color:var(--nc);}
+.unit{font-size:9px;color:rgba(200,230,255,.24);}
+.toggle-row{justify-content:space-between;}
+.toggle{position:relative;width:33px;height:16px;flex-shrink:0;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);border-radius:10px;transition:all var(--t);}
+.toggle input:checked~.toggle-track{background:rgba(0,229,255,.2);border-color:var(--nc);}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:10px;height:10px;background:var(--dim);border-radius:50%;transition:all var(--t);}
+.toggle input:checked~.toggle-thumb{transform:translateX(17px);background:var(--nc);box-shadow:0 0 6px var(--nc);}
+
+/* ═══════════════════════════════════════
+   SIDE PANELS
+═══════════════════════════════════════ */
+.side-left,.side-right{
+  position:sticky;top:70px;max-height:calc(100vh - 80px);
+  display:flex;flex-direction:column;gap:14px;z-index:10;
+}
+
+/* Floating panel base */
+.float-panel{
+  border-radius:12px;
+  background:linear-gradient(160deg,rgba(4,16,40,.96) 0%,rgba(2,10,26,.96) 100%);
+  border:1px solid rgba(0,229,255,.14);
+  box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04);
+  overflow:hidden;animation:fadeUp .6s ease both;
+}
+.float-panel-header{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 14px 10px;border-bottom:1px solid rgba(0,229,255,.08);
+  background:linear-gradient(90deg,rgba(0,229,255,.05),transparent);
+}
+.float-panel-header .fph-icon{font-size:16px;}
+.float-panel-header h3{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--nc);flex:1;}
+.float-panel-body{padding:12px 14px 14px;}
+
+/* ── LUNA PANEL (LEFT) ── */
+.luna-panel{}
+.luna-panel .float-panel-header h3{color:var(--nc);}
+.luna-header-info{display:flex;flex-direction:column;flex:1;}
+.luna-header-info .ln{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--nc);}
+.luna-header-info .ls{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--dim);}
+.luna-status-dot{width:5px;height:5px;background:var(--ng);border-radius:50%;box-shadow:0 0 5px var(--ng);animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.luna-messages{
+  height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;
+  padding-right:2px;scroll-behavior:smooth;margin-bottom:8px;
+}
+.luna-messages::-webkit-scrollbar{width:2px;}
+.luna-messages::-webkit-scrollbar-thumb{background:rgba(0,229,255,.18);border-radius:2px;}
+.msg{max-width:90%;padding:7px 10px;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:12px;line-height:1.5;animation:msgIn .2s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.msg.luna-m{background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.13);color:#cce8ff;align-self:flex-start;border-bottom-left-radius:1px;}
+.msg.user-m{background:rgba(191,0,255,.08);border:1px solid rgba(191,0,255,.18);color:#e0ccff;align-self:flex-end;border-bottom-right-radius:1px;}
+.msg .ms{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:1px;margin-bottom:2px;}
+.msg.luna-m .ms{color:var(--nc);}
+.msg.user-m .ms{color:var(--npu);}
+.typing-ind{display:none;align-self:flex-start;padding:7px 10px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.1);border-radius:6px;}
+.typing-ind span{display:inline-block;width:4px;height:4px;background:var(--nc);border-radius:50%;margin:0 2px;animation:tdot 1.1s infinite;}
+.typing-ind span:nth-child(2){animation-delay:.18s;}
+.typing-ind span:nth-child(3){animation-delay:.36s;}
+@keyframes tdot{0%,80%,100%{transform:scale(0.5);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+.quick-btns{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;}
+.qbtn{font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 8px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.12);border-radius:10px;color:var(--dim);cursor:pointer;transition:all var(--t);}
+.qbtn:hover{border-color:var(--nc);color:var(--nc);}
+.chat-row{display:flex;gap:4px;}
+.chat-row input{flex:1;padding:8px 10px;background:rgba(0,10,30,.85);border:1px solid rgba(0,229,255,.13);border-radius:6px;color:#cce8ff;font-family:'Rajdhani',sans-serif;font-size:12px;outline:none;box-shadow:inset 0 2px 6px rgba(0,0,0,.3);}
+.chat-row input:focus{border-color:var(--nc);}
+
+/* ── RIGHT PANEL ── */
+.right-stack{}
+.analytic-panel .float-panel-header h3{color:var(--np);}
+.sound-panel-f .float-panel-header h3{color:var(--npu);}
+
+/* mini sound grid in right panel */
+.mini-sound-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;}
+.mini-sb{
+  padding:9px 5px;border-radius:7px;cursor:pointer;transition:all .13s ease;text-align:center;
+  background:linear-gradient(180deg,rgba(80,0,150,.1),rgba(50,0,100,.08));
+  border:1px solid rgba(191,0,255,.14);
+  box-shadow:0 4px 0 rgba(50,0,90,.5),0 6px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.mini-sb:hover{transform:translateY(-1px);box-shadow:0 5px 0 rgba(50,0,90,.5),0 8px 16px rgba(0,0,0,.35),0 0 12px rgba(191,0,255,.1);}
+.mini-sb:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(50,0,90,.5);}
+.mini-sb.playing{border-color:var(--npu);box-shadow:0 4px 0 rgba(70,0,120,.6),0 6px 14px rgba(0,0,0,.35),0 0 16px rgba(191,0,255,.14);}
+.mini-sb .si{font-size:16px;margin-bottom:2px;}
+.mini-sb .sn{font-family:'Orbitron',monospace;font-size:6.5px;letter-spacing:.5px;text-transform:uppercase;color:#cce8ff;}
+.mini-sb.playing .sn{color:var(--npu);text-shadow:0 0 6px rgba(191,0,255,.4);}
+
+/* mini analytics */
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;}
+.mini-stat{background:rgba(0,10,28,.8);border:1px solid rgba(0,229,255,.09);border-radius:6px;padding:8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.mini-stat .mv{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--nc);text-shadow:0 0 8px rgba(0,229,255,.25);}
+.mini-stat .ml{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);}
+.mini-chart{height:60px;display:flex;align-items:flex-end;gap:3px;background:rgba(0,5,16,.6);border:1px solid rgba(0,229,255,.06);border-radius:6px;padding:6px 6px 4px;}
+.mc-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;background:linear-gradient(to top,var(--nc),rgba(0,229,255,.2));transition:height .5s ease;cursor:pointer;position:relative;}
+.mc-bar .mc-tip{display:none;position:absolute;bottom:calc(100%+3px);left:50%;transform:translateX(-50%);background:rgba(0,16,38,.97);border:1px solid rgba(0,229,255,.18);padding:2px 5px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--nc);white-space:nowrap;z-index:10;}
+.mc-bar:hover .mc-tip{display:block;}
+.mc-bar:hover{filter:brightness(1.4);}
+
+/* ═══════════════════════════════════════
+   MANUAL
+═══════════════════════════════════════ */
+#manual-section{position:relative;z-index:10;background:rgba(1,7,18,.98);border-top:1px solid rgba(0,229,255,.1);padding:60px 20px;}
+.manual-inner{max-width:860px;margin:0 auto;}
+.sec-divider{display:flex;align-items:center;gap:13px;margin:46px 0 22px;}
+.sec-divider::before,.sec-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.2),transparent);}
+.sec-tag{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.3);white-space:nowrap;}
+.manual-hero{text-align:center;padding:6px 0 28px;}
+.manual-hero .big-title{font-family:'Great Vibes',cursive;font-size:clamp(30px,6vw,64px);background:linear-gradient(135deg,var(--nc) 0%,#fff 40%,var(--np) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px rgba(0,229,255,.3));margin-bottom:6px;}
+.manual-hero .version-tag{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 12px;border:1px solid rgba(0,229,255,.2);border-radius:2px;color:var(--dim);letter-spacing:2px;margin-bottom:14px;}
+.manual-hero p{font-size:14px;color:var(--dim);line-height:1.7;max-width:540px;margin:0 auto;}
+.origin-box{background:rgba(0,229,255,.02);border:1px solid rgba(0,229,255,.08);border-left:3px solid var(--nc);border-radius:0 4px 4px 0;padding:20px 24px;margin:13px 0;}
+.origin-box h2{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--nc);margin-bottom:9px;}
+.origin-box p{font-size:13px;line-height:1.8;color:rgba(200,230,255,.68);margin-bottom:8px;}
+.origin-box p:last-child{margin-bottom:0;}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px;margin:13px 0;}
+.why-card{background:rgba(0,10,28,.7);border:1px solid rgba(0,229,255,.08);border-radius:8px;padding:15px 13px;position:relative;overflow:hidden;transition:border-color .3s;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+.why-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.why-card.c1::before{background:linear-gradient(90deg,var(--nc),transparent);}
+.why-card.c2::before{background:linear-gradient(90deg,var(--np),transparent);}
+.why-card.c3::before{background:linear-gradient(90deg,var(--ng),transparent);}
+.why-card:hover{border-color:rgba(0,229,255,.2);}
+.why-card .icon{font-size:22px;margin-bottom:6px;}
+.why-card h3{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.why-card.c1 h3{color:var(--nc);}.why-card.c2 h3{color:var(--np);}.why-card.c3 h3{color:var(--ng);}
+.why-card p{font-size:12px;line-height:1.7;color:var(--dim);}
+.steps-list{counter-reset:step;list-style:none;display:flex;flex-direction:column;gap:9px;margin:13px 0;}
+.steps-list li{counter-increment:step;display:flex;gap:14px;align-items:flex-start;background:rgba(0,10,28,.6);border:1px solid rgba(0,229,255,.07);border-radius:8px;padding:14px 16px;box-shadow:0 3px 10px rgba(0,0,0,.3);}
+.steps-list li::before{content:counter(step,decimal-leading-zero);font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.3);min-width:38px;line-height:1;}
+.step-content h4{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:4px;}
+.step-content p{font-size:12px;line-height:1.7;color:var(--dim);}
+.science-table{width:100%;border-collapse:collapse;margin:13px 0;font-family:'Share Tech Mono',monospace;font-size:11px;}
+.science-table th{background:rgba(0,229,255,.04);color:var(--nc);font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:9px 12px;text-align:left;border-bottom:1px solid rgba(0,229,255,.12);}
+.science-table td{padding:9px 12px;border-bottom:1px solid rgba(0,229,255,.04);color:var(--dim);line-height:1.6;}
+.science-table tr:hover td{background:rgba(0,229,255,.02);}
+.science-table .hl{color:var(--ng);}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px;margin:13px 0;}
+.feat-item{display:flex;align-items:flex-start;gap:7px;padding:9px;background:rgba(0,10,28,.5);border:1px solid rgba(0,229,255,.05);border-radius:6px;font-size:11px;color:var(--dim);}
+.feat-dot{width:4px;height:4px;background:var(--ng);border-radius:50%;margin-top:5px;flex-shrink:0;box-shadow:0 0 5px var(--ng);}
+.tips-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin:13px 0;}
+.tips-list li{padding:10px 14px;background:rgba(255,0,170,.03);border:1px solid rgba(255,0,170,.08);border-left:3px solid var(--np);border-radius:0 6px 6px 0;font-size:12px;color:rgba(200,230,255,.68);line-height:1.6;}
+.tips-list li strong{font-family:'Share Tech Mono',monospace;color:var(--np);margin-right:4px;}
+.faq-item{border:1px solid rgba(0,229,255,.08);border-radius:6px;margin-bottom:5px;overflow:hidden;}
+.faq-q{padding:11px 14px;background:rgba(0,10,28,.6);font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.7px;color:var(--nc);cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+.faq-q::after{content:'▼';font-size:8px;opacity:.4;transition:transform .2s;}
+.faq-item.open .faq-q::after{transform:rotate(180deg);}
+.faq-a{display:none;padding:11px 14px;font-size:12px;line-height:1.7;color:var(--dim);background:rgba(0,5,14,.5);border-top:1px solid rgba(0,229,255,.05);}
+.faq-item.open .faq-a{display:block;}
+.copyright-box{background:rgba(0,10,28,.85);border:1px solid rgba(0,229,255,.08);border-radius:8px;padding:22px;margin:13px 0;}
+.copyright-box h2{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--ny);text-shadow:0 0 8px rgba(255,230,0,.22);margin-bottom:13px;}
+.copyright-box p{font-size:12px;line-height:1.8;color:var(--dim);margin-bottom:9px;}
+.copyright-box p:last-child{margin-bottom:0;}
+.copy-badge{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 8px;background:rgba(255,230,0,.05);border:1px solid rgba(255,230,0,.15);border-radius:2px;color:var(--ny);margin:2px;}
+.manual-footer{text-align:center;padding-top:44px;border-top:1px solid rgba(0,229,255,.06);margin-top:44px;}
+.footer-logo{font-family:'Great Vibes',cursive;font-size:36px;background:linear-gradient(135deg,var(--nc),#fff,var(--npu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 8px rgba(0,229,255,.25));margin-bottom:7px;}
+.footer-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:11px;}
+.footer-copy{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(200,230,255,.16);letter-spacing:1px;}
+
+/* FOCUS MODE */
+body.focus-mode .side-left,body.focus-mode .side-right,body.focus-mode .nav-tabs,body.focus-mode .quote,body.focus-mode #topbar{display:none;}
+body.focus-mode .app-layout{grid-template-columns:1fr;padding:20px;}
+body.focus-mode #app-section{padding-top:0;}
+
+@media(max-width:1100px){
+  .side-left,.side-right{position:static;max-height:none;}
+  .app-layout{display:flex;flex-direction:column;align-items:center;}
+  .side-left,.side-right{width:100%;max-width:480px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── ATMOSPHERE ── -->
+<div class="stars" id="stars"></div>
+<div class="scanlines"></div>
+<div class="rain" id="rain"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-brand">Lunovix Studio</div>
+      <div class="login-sub">Pomodo Focus</div>
+      <div class="login-desc">// Neural Deep Work Engine v5.0 //</div>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab('signin',this)">Sign In</button>
+      <button class="login-tab" onclick="switchLoginTab('signup',this)">Create Profile</button>
+    </div>
+    <div id="signinForm">
+      <div class="login-field"><label>Username</label><input type="text" id="siUser" placeholder="Enter username"></div>
+      <div class="login-field"><label>Password</label><input type="password" id="siPass" placeholder="Password (try 'demo')"></div>
+      <button class="btn3 btn3-cyan btn3-lg btn3-full" onclick="doSignIn()" style="margin-top:4px;">▶ INITIATE SESSION</button>
+      <div class="login-err" id="siErr"></div>
+    </div>
+    <div id="signupForm" style="display:none">
+      <div class="login-field"><label>Display Name</label><input type="text" id="suName" placeholder="Your name (shown on leaderboard)"></div>
+      <div class="login-field"><label>Username</label><input type="text" id="suUser" placeholder="Unique username"></div>
+      <div class="login-field"><label>Password</label><input type="password" id="suPass" placeholder="Min 4 characters"></div>
+      <button class="btn3 btn3-green btn3-lg btn3-full" onclick="doSignUp()" style="margin-top:4px;">⚡ DEPLOY PROFILE</button>
+      <div class="login-err" id="suErr"></div>
+    </div>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);text-align:center;margin-top:12px;">Demo: any username + password "demo" · All data stored locally</p>
+  </div>
+</div>
+
+<!-- ═══ TOPBAR ═══ -->
+<div id="topbar" style="display:none">
+  <div class="studio-brand">
+    <div class="studio-icon">L</div>
+    <div>
+      <div class="studio-name">Lunovix Studio</div>
+      <div class="studio-tagline">Neural Focus Platform</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <!-- Leaderboard top-right -->
+    <div class="topbar-lb" onclick="toggleLbDropdown()" id="lbTrigger">
+      <span class="lb-icon">🏆</span>
+      <span class="lb-text">Rank</span>
+      <span class="lb-rank" id="myRankDisplay">#—</span>
+      <div class="lb-dropdown" id="lbDropdown">
+        <div class="lb-drop-title">// Top Operators</div>
+        <div id="lbDropList"></div>
+      </div>
+    </div>
+    <div class="user-pill">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span id="userNameDisplay">Guest</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">LOG OUT</button>
+  </div>
+</div>
+
+<!-- ═══ APP ROOT ═══ -->
+<div id="appRoot">
+<div class="app-layout">
+
+  <!-- ── LEFT: LUNA AI ── -->
+  <div class="side-left">
+    <div class="float-panel luna-panel">
+      <div class="float-panel-header">
+        <span class="fph-icon">🤖</span>
+        <div class="luna-header-info">
+          <span class="ln">LUNA AI</span>
+          <span class="ls">Focus Architect · Lunovix</span>
+        </div>
+        <div class="luna-status-dot"></div>
+      </div>
+      <div class="float-panel-body">
+        <div class="luna-messages" id="lunaMessages"></div>
+        <div class="typing-ind" id="typingInd"><span></span><span></span><span></span></div>
+        <div class="quick-btns">
+          <button class="qbtn" onclick="quickMsg('Motivate me')">💪 Motivate</button>
+          <button class="qbtn" onclick="quickMsg('Make me a study schedule')">📅 Schedule</button>
+          <button class="qbtn" onclick="quickMsg('Give me a time plan')">⏰ Time Plan</button>
+          <button class="qbtn" onclick="quickMsg('How does Pomodoro work?')">🍅 Tips</button>
+        </div>
+        <div class="chat-row">
+          <input id="chatInput" placeholder="Ask Luna..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="btn3 btn3-cyan btn3-sm" onclick="sendMsg()">GO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CENTER: MAIN APP ── -->
+  <div class="center-col">
+  <div id="app-section">
+  <div class="container">
+    <div class="app-header">
+      <h1>Pomodo Focus</h1>
+      <div class="subtitle">// NEURAL FOCUS ENGINE v5.0 — LUNOVIX STUDIO //</div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab(this,'timer')">⏱ Timer</button>
+      <button class="nav-tab" onclick="switchTab(this,'tasks')">🎯 Missions</button>
+      <button class="nav-tab" onclick="switchTab(this,'badges')">🏅 Badges</button>
+      <button class="nav-tab" onclick="switchTab(this,'settings')">⚙️ Config</button>
+    </div>
+
+    <!-- TIMER -->
+    <div id="panel-timer" class="panel active">
+      <div class="mode">
+        <button class="mode-btn active" onclick="setMode('pomodoro')" id="pomodoroBtn">Deep Focus</button>
+        <button class="mode-btn" onclick="setMode('short')" id="shortBtn">Recovery</button>
+        <button class="mode-btn" onclick="setMode('long')" id="longBtn">Recharge</button>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer" id="timer">25:00</div>
+        <div class="session-label" id="sessionLabel">// Neural Focus Session</div>
+      </div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="quote" id="quoteText"></div>
+      <div class="controls">
+        <button class="btn3 btn3-green btn3-lg" id="startBtn" onclick="startTimer()">▶ ENGAGE</button>
+        <button class="btn3 btn3-cyan btn3-sm" onclick="pauseTimer()">⏸ PAUSE</button>
+        <button class="btn3 btn3-cyan btn3-sm" onclick="resetTimer()">↺ RESET</button>
+        <button class="btn3 btn3-pink btn3-sm" onclick="toggleFocusMode()">◎ FOCUS</button>
+      </div>
+    </div>
+
+    <!-- MISSIONS -->
+    <div id="panel-tasks" class="panel">
+      <div class="panel-title tasks-title">// Mission Queue</div>
+      <div class="task-inputs">
+        <input id="taskName" placeholder="Mission objective">
+        <input id="taskTime" placeholder="Min" type="number" style="max-width:68px">
+      </div>
+      <button class="btn3 btn3-green btn3-sm btn3-full" onclick="addTask()" style="margin-bottom:8px;">⊕ DEPLOY MISSION</button>
+      <div id="taskList"></div>
+      <p id="total">Queue: 0 min</p>
+      <div class="discord"><a href="https://discord.gg/K2qdpptnUu" target="_blank">[ Lunovix Community Discord ]</a></div>
+    </div>
+
+    <!-- BADGES -->
+    <div id="panel-badges" class="panel">
+      <div class="panel-title" style="color:var(--ny);font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">// Achievement Matrix</div>
+      <div class="badges-grid" id="badgesGrid"></div>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);text-align:center;margin-top:3px;">Complete sessions & build streaks to unlock all 12</p>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div class="panel-title settings-title">// System Configuration</div>
+      <div class="settings-section">
+        <h4>Session Duration</h4>
+        <div class="setting-row"><label>Deep Focus Cycle</label><input type="number" id="set-pomodoro" value="25" min="1" max="90"><span class="unit">min</span></div>
+        <div class="setting-row"><label>Recovery Sprint</label><input type="number" id="set-short" value="5" min="1" max="30"><span class="unit">min</span></div>
+        <div class="setting-row"><label>Extended Recharge</label><input type="number" id="set-long" value="15" min="1" max="60"><span class="unit">min</span></div>
+      </div>
+      <div class="settings-section">
+        <h4>Alerts & Automation</h4>
+        <div class="setting-row toggle-row"><label>Bell alarm on complete</label><label class="toggle"><input type="checkbox" id="set-alarm" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        <div class="setting-row toggle-row"><label>Browser notifications</label><label class="toggle"><input type="checkbox" id="set-notif" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        <div class="setting-row toggle-row"><label>Auto-initiate recovery</label><label class="toggle"><input type="checkbox" id="set-autobreak"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        <div class="setting-row toggle-row"><label>Quantum rain FX</label><label class="toggle"><input type="checkbox" id="set-rain" checked onchange="toggleRain(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      </div>
+      <button class="btn3 btn3-yellow btn3-sm btn3-full" onclick="saveSettings()" style="margin-top:4px;">💾 COMMIT CONFIG</button>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- ── RIGHT: SOUNDSCAPE + ANALYTICS ── -->
+  <div class="side-right right-stack">
+
+    <!-- SOUNDSCAPE -->
+    <div class="float-panel sound-panel-f">
+      <div class="float-panel-header">
+        <span class="fph-icon">🎵</span>
+        <h3>Soundscape Engine</h3>
+      </div>
+      <div class="float-panel-body">
+        <div class="mini-sound-grid">
+          <div class="mini-sb" id="snd-rain" onclick="toggleSound('rain')"><div class="si">🌧️</div><div class="sn">Quantum Rain</div></div>
+          <div class="mini-sb" id="snd-lofi" onclick="toggleSound('lofi')"><div class="si">🎵</div><div class="sn">Lo-Fi Matrix</div></div>
+          <div class="mini-sb" id="snd-white" onclick="toggleSound('white')"><div class="si">🌊</div><div class="sn">White Noise</div></div>
+          <div class="mini-sb" id="snd-forest" onclick="toggleSound('forest')"><div class="si">🌿</div><div class="sn">Bio-Forest</div></div>
+          <div class="mini-sb" id="snd-piano" onclick="toggleSound('piano')"><div class="si">🎹</div><div class="sn">Soft Piano</div></div>
+          <div class="mini-sb" id="snd-interstellar" onclick="toggleSound('interstellar')"><div class="si">🪐</div><div class="sn">Interstellar</div></div>
+        </div>
+        <div class="vol-row">
+          <span style="font-size:10px">Vol</span>
+          <input type="range" id="volSlider" min="0" max="100" value="55" oninput="setVolume(this.value)">
+          <span id="volVal" style="font-size:10px">55%</span>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);line-height:1.5;background:rgba(0,8,22,.5);border:1px solid rgba(191,0,255,.07);border-radius:5px;padding:7px;">ℹ All sounds synthesized via Web Audio API — offline capable. Interstellar theme recreates Hans Zimmer's organ-driven score.</div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="float-panel analytic-panel">
+      <div class="float-panel-header">
+        <span class="fph-icon">📊</span>
+        <h3 style="color:var(--np)">Neural Analytics</h3>
+      </div>
+      <div class="float-panel-body">
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="mv" id="ms-streak">0</div><div class="ml">🔥 streak</div></div>
+          <div class="mini-stat"><div class="mv" id="ms-today">0</div><div class="ml">⏱ today</div></div>
+          <div class="mini-stat"><div class="mv" id="ms-total">0</div><div class="ml">🏆 total min</div></div>
+          <div class="mini-stat"><div class="mv" id="ms-sessions">0</div><div class="ml">🍅 sessions</div></div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:5px;letter-spacing:1px;">7-DAY OUTPUT MAP</div>
+        <div class="mini-chart" id="miniChart"></div>
+        <div style="margin-top:10px;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:5px;letter-spacing:1px;">DAILY TARGET</div>
+          <div class="goal-row" style="font-size:9px;">Goal: <span id="goal">180</span>m <span class="g-val" id="goalProgress">0%</span></div>
+          <div class="goal-pw"><div class="goal-pf" id="goalBar" style="width:0%"></div></div>
+          <div class="goal-ir" style="margin-top:6px;">
+            <input id="goalInput" type="number" placeholder="Set target (min)" style="font-size:10px;padding:6px 8px;">
+            <button class="btn3 btn3-cyan btn3-sm" onclick="setGoal()">SET</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /side-right -->
+</div><!-- /app-layout -->
+
+<!-- MANUAL -->
+<div id="manual-section">
+<div class="manual-inner">
+  <div class="manual-hero">
+    <div class="big-title">Lunovix Studio — Pomodo Focus</div>
+    <div class="version-tag">VERSION 5.0 — NEURAL DEEP WORK PLATFORM</div>
+    <p>The complete operator guide for Pomodo Focus — Lunovix Studio's AI-powered deep work engine for people who take their time seriously.</p>
+  </div>
+  <div class="sec-divider"><span class="sec-tag">Origin Story</span></div>
+  <div class="origin-box">
+    <h2>Why Lunovix Studio Built This</h2>
+    <p>Pomodo Focus was engineered because modern productivity tools are fundamentally broken. They're either bloated with features nobody uses, locked behind subscription walls, or secretly optimized to keep you inside the tool rather than doing actual work. Lunovix Studio was founded on a single principle: the best productivity tool is one that disappears and lets you work.</p>
+    <p>Version 5.0 introduces the fully-realized vision — a three-panel neural workspace with Luna AI on the left, your focus engine in the center, and your soundscape and analytics on the right. Everything is accessible without navigation. Everything is live.</p>
+  </div>
+  <div class="sec-divider"><span class="sec-tag">Why It Matters</span></div>
+  <div class="why-grid">
+    <div class="why-card c1"><div class="icon">🧠</div><h3>Neural Flow States</h3><p>Structured intervals align with your brain's ultradian rhythms, maximizing depth and quality of every session.</p></div>
+    <div class="why-card c2"><div class="icon">🤖</div><h3>AI-Powered Planning</h3><p>Luna doesn't just track time — she builds schedules, delivers motivation, and guides your productivity strategy in real time.</p></div>
+    <div class="why-card c3"><div class="icon">🪐</div><h3>Immersive Environment</h3><p>From the Interstellar piano soundscape to the deep space visual system, every element is designed to pull you into flow.</p></div>
+  </div>
+  <div class="sec-divider"><span class="sec-tag">How It Works</span></div>
+  <ol class="steps-list">
+    <li><div class="step-content"><h4>Sign In or Create Profile</h4><p>Your profile powers the leaderboard, persists your stats, and personalizes Luna. Use password "demo" for instant access.</p></div></li>
+    <li><div class="step-content"><h4>Set Your Soundscape</h4><p>Pick a sound from the right panel — Quantum Rain, Lo-Fi Matrix, White Noise, Bio-Forest, Soft Piano, or the Interstellar organ theme. Sounds generate live, no downloads needed.</p></div></li>
+    <li><div class="step-content"><h4>Consult Luna AI</h4><p>The left panel is your always-on AI co-pilot. Ask for schedules, motivation, time plans, or Pomodoro guidance. Luna responds with personalized, actionable advice.</p></div></li>
+    <li><div class="step-content"><h4>Engage Your Session</h4><p>Hit ENGAGE on the center timer. Your analytics update in real-time in the right panel. The bell chimes when your cycle completes.</p></div></li>
+    <li><div class="step-content"><h4>Track Progress</h4><p>Your 7-day output map, streak, total minutes, and session count all live in the right analytics panel — always visible, always current.</p></div></li>
+  </ol>
+  <div class="sec-divider"><span class="sec-tag">Interstellar Sound</span></div>
+  <div class="origin-box">
+    <h2>The Interstellar Piano Theme</h2>
+    <p>The Interstellar soundscape is inspired by Hans Zimmer's iconic score for the 2014 Christopher Nolan film. The score is built around a massive pipe organ — an instrument chosen by Zimmer to represent the vast, inhuman scale of space and time. The defining characteristic is its slow, layered, building quality: notes sustain and overlap, creating an atmosphere of profound depth and forward momentum.</p>
+    <p>Our Web Audio API synthesis recreates this using layered oscillators tuned to Zimmer's harmonic language (D minor, F major), with long attack and decay envelopes to simulate organ pipe resonance, plus a reverb convolution to create the vast spatial depth of the film's sound. The result is a slow, evolving soundscape that builds over time — perfect for sustained deep work sessions where you need to feel the weight and importance of your work.</p>
+  </div>
+  <div class="sec-divider"><span class="sec-tag">The Science</span></div>
+  <table class="science-table">
+    <thead><tr><th>Concept</th><th>Mechanism</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td class="hl">Time Boxing</td><td>Fixed intervals eliminate decision fatigue and task scope creep.</td><td>40% reduction in switching cost</td></tr>
+      <tr><td class="hl">Ultradian Rhythms</td><td>Brain cycles through focus/recovery naturally. Short blocks align with peaks.</td><td>Maximizes deep work output</td></tr>
+      <tr><td class="hl">Zeigarnik Effect</td><td>Countdown creates tension that drives completion to resolution.</td><td>Higher task completion rates</td></tr>
+      <tr><td class="hl">Social Accountability</td><td>Leaderboard competition creates gentle external pressure.</td><td>30–40% consistency improvement</td></tr>
+      <tr><td class="hl">Ambient Sound Entrainment</td><td>Consistent audio becomes Pavlovian focus trigger over repeated sessions.</td><td>Deepened flow state entry</td></tr>
+    </tbody>
+  </table>
+  <div class="sec-divider"><span class="sec-tag">Tips</span></div>
+  <ul class="tips-list">
+    <li><strong>TIP 01 //</strong> Use the Interstellar soundscape for your most demanding sessions. The slow build mirrors and amplifies sustained cognitive effort.</li>
+    <li><strong>TIP 02 //</strong> Ask Luna for a personalized daily schedule. Give her your specific tasks and available hours for a time-blocked plan.</li>
+    <li><strong>TIP 03 //</strong> The leaderboard refreshes after every session. Your rank is always one good session away from climbing.</li>
+    <li><strong>TIP 04 //</strong> The right analytics panel updates live. Watch your 7-day map grow as you build consistent daily habits.</li>
+    <li><strong>TIP 05 //</strong> Use FOCUS MODE for maximum immersion — it strips the interface to just the timer countdown.</li>
+  </ul>
+  <div class="sec-divider"><span class="sec-tag">FAQ</span></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Is the Interstellar sound actually from the film?</div><div class="faq-a">No — it is an original synthesis inspired by Hans Zimmer's compositional language and the emotional texture of the score. It is not a reproduction of any copyrighted material. All audio is generated procedurally using Web Audio API oscillators.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does the leaderboard work?</div><div class="faq-a">The leaderboard ranks all browser-stored accounts by total focus minutes. It includes demo competitors so it's never empty. In a single-device setup, all accounts compete together. A shared cloud leaderboard is on the Lunovix roadmap.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Is my data private?</div><div class="faq-a">Yes. All data — login credentials, stats, tasks, settings — is stored exclusively in your browser's localStorage. Nothing is sent to any server. Your data never leaves your device.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Is this free?</div><div class="faq-a">Completely free, forever. No subscriptions, paywalls, ads, or accounts required beyond the local login. Lunovix Studio believes great tools should be accessible to everyone.</div></div>
+  <div class="sec-divider"><span class="sec-tag">Legal & Copyright</span></div>
+  <div class="copyright-box">
+    <h2>⚠ Copyright & Legal Notice</h2>
+    <p><span class="copy-badge">© 2024–2025 Lunovix Studio</span> <span class="copy-badge">Pomodo Focus v5.0</span> <span class="copy-badge">All Rights Reserved</span></p>
+    <p>All source code, design systems, visual assets, written content, the "Lunovix Studio" name, the "Pomodo Focus" name, and the "Luna AI" designation are the exclusive intellectual property of Lunovix Studio. The Interstellar-inspired soundscape is an original Web Audio synthesis and is not affiliated with or derived from any copyrighted film score.</p>
+    <p><strong style="color:rgba(200,230,255,.85);">The Pomodoro Technique®</strong> is a registered trademark of Francesco Cirillo. Pomodo Focus is independent and not affiliated with or endorsed by Francesco Cirillo.</p>
+  </div>
+  <div class="manual-footer">
+    <div class="footer-logo">Lunovix Studio</div>
+    <div class="footer-sub">// Built for focus. Designed for flow. Engineered for the future. //</div>
+    <div class="footer-copy">© 2024–2025 Lunovix Studio · Pomodo Focus · <a href="https://discord.gg/K2qdpptnUu" target="_blank" style="color:var(--np);text-decoration:none;">Discord</a></div>
+  </div>
+</div>
+</div>
+</div><!-- /appRoot -->
+
+<script>
+/* ── STARS ── */
+const starsEl=document.getElementById("stars");
+for(let i=0;i<180;i++){
+  let s=document.createElement("div");s.className="star";
+  let sz=.5+Math.random()*1.5;
+  s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;opacity:${.1+Math.random()*.6}`;
+  starsEl.appendChild(s);
+}
+/* ── RAIN ── */
+const rainEl=document.getElementById("rain");
+for(let i=0;i<60;i++){
+  let d=document.createElement("div");d.className="drop";
+  d.style.left=Math.random()*100+"%";d.style.top=Math.random()*-100+"px";
+  d.style.animationDuration=(.45+Math.random()*.7)+"s";d.style.animationDelay=Math.random()*2+"s";
+  rainEl.appendChild(d);
+}
+/* ── TOAST ── */
+let _tt;
+function showToast(msg,c="var(--nc)"){
+  const t=document.getElementById("toast");
+  t.innerText=msg;t.style.borderColor=c;t.style.color=c;
+  t.classList.add("show");clearTimeout(_tt);
+  _tt=setTimeout(()=>t.classList.remove("show"),3000);
+}
+/* ── PARTICLES ── */
+function burst(cx,cy,col){
+  for(let i=0;i<18;i++){
+    let p=document.createElement("div");p.className="particle";
+    let sz=3+Math.random()*5;
+    p.style.cssText=`width:${sz}px;height:${sz}px;background:${col};left:${cx}px;top:${cy}px;--dx:${(Math.random()-.5)*140}px;--dy:${(Math.random()-.5)*140}px;`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),900);
+  }
+}
+
+/* ── AUTH ── */
+let currentUser=null;
+function getUsers(){return JSON.parse(localStorage.getItem("lx-users")||"{}");}
+function saveUsers(u){localStorage.setItem("lx-users",JSON.stringify(u));}
+function switchLoginTab(tab,btn){
+  document.querySelectorAll(".login-tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("signinForm").style.display=tab==="signin"?"block":"none";
+  document.getElementById("signupForm").style.display=tab==="signup"?"block":"none";
+}
+function doSignIn(){
+  const u=document.getElementById("siUser").value.trim();
+  const p=document.getElementById("siPass").value;
+  const err=document.getElementById("siErr");
+  if(!u||!p){err.innerText="// Enter username and password";return;}
+  const users=getUsers();
+  if(p==="demo"&&!users[u]){
+    users[u]={name:u,password:"demo",stats:{total:0,today:0,lastDate:"",streak:0,sessions:0,week:{}},badges:[]};
+    saveUsers(users);
+  }
+  if(!users[u]){err.innerText="// Account not found";return;}
+  if(users[u].password!==p){err.innerText="// Invalid credentials";return;}
+  loginUser(u,users[u]);
+}
+function doSignUp(){
+  const name=document.getElementById("suName").value.trim();
+  const u=document.getElementById("suUser").value.trim();
+  const p=document.getElementById("suPass").value;
+  const err=document.getElementById("suErr");
+  if(!name||!u||!p){err.innerText="// All fields required";return;}
+  if(p.length<4){err.innerText="// Password min 4 chars";return;}
+  const users=getUsers();
+  if(users[u]){err.innerText="// Username taken";return;}
+  users[u]={name,password:p,stats:{total:0,today:0,lastDate:"",streak:0,sessions:0,week:{}},badges:[]};
+  saveUsers(users);loginUser(u,users[u]);
+}
+function loginUser(username,userData){
+  currentUser=username;
+  stats=userData.stats||{total:0,today:0,lastDate:"",streak:0,sessions:0,week:{}};
+  if(!stats.week)stats.week={};
+  unlocked=userData.badges||[];
+  document.getElementById("loginOverlay").style.display="none";
+  document.getElementById("appRoot").style.display="block";
+  document.getElementById("topbar").style.display="flex";
+  const av=document.getElementById("userAvatar");
+  const nm=document.getElementById("userNameDisplay");
+  av.innerText=(userData.name||username)[0].toUpperCase();
+  nm.innerText=userData.name||username;
+  renderMiniStats();renderMiniChart();renderTasks();renderBadges();renderLbDropdown();
+  setTimeout(()=>lunaGreet(),500);
+}
+function doLogout(){
+  saveCurrentUser();currentUser=null;
+  document.getElementById("appRoot").style.display="none";
+  document.getElementById("topbar").style.display="none";
+  document.getElementById("loginOverlay").style.display="flex";
+  document.getElementById("lunaMessages").innerHTML="";
+  pauseTimer();stopSound();
+}
+function saveCurrentUser(){
+  if(!currentUser)return;
+  const users=getUsers();
+  if(users[currentUser]){users[currentUser].stats=stats;users[currentUser].badges=unlocked;saveUsers(users);}
+}
+
+/* ── SETTINGS ── */
+let cfg=JSON.parse(localStorage.getItem("pf-cfg"))||{pomodoro:25,short:5,long:15,alarm:true,notif:true,autobreak:false,rain:true};
+function loadCfg(){
+  document.getElementById("set-pomodoro").value=cfg.pomodoro;
+  document.getElementById("set-short").value=cfg.short;
+  document.getElementById("set-long").value=cfg.long;
+  document.getElementById("set-alarm").checked=cfg.alarm;
+  document.getElementById("set-notif").checked=cfg.notif;
+  document.getElementById("set-autobreak").checked=cfg.autobreak;
+  document.getElementById("set-rain").checked=cfg.rain;
+  toggleRain(cfg.rain);
+}
+function saveSettings(){
+  cfg.pomodoro=parseInt(document.getElementById("set-pomodoro").value)||25;
+  cfg.short=parseInt(document.getElementById("set-short").value)||5;
+  cfg.long=parseInt(document.getElementById("set-long").value)||15;
+  cfg.alarm=document.getElementById("set-alarm").checked;
+  cfg.notif=document.getElementById("set-notif").checked;
+  cfg.autobreak=document.getElementById("set-autobreak").checked;
+  cfg.rain=document.getElementById("set-rain").checked;
+  localStorage.setItem("pf-cfg",JSON.stringify(cfg));
+  if(!isRunning)setMode(currentMode);
+  showToast("// Config committed ✓","var(--ny)");
+}
+function toggleRain(on){rainEl.style.display=on?"block":"none";}
+
+/* ── TABS ── */
+function switchTab(btn,name){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("panel-"+name).classList.add("active");
+  btn.classList.add("active");
+  if(name==="badges")renderBadges();
+}
+
+/* ── TIMER ── */
+let timeLeft=1500,totalTime=1500,isRunning=false,endTime=null,currentMode="pomodoro";
+let currentTaskIndex=-1,isBreak=false;
+let stats={total:0,today:0,lastDate:"",streak:0,sessions:0,week:{}};
+let goal=180;
+const quotes=[
+  "The neural pathways of discipline are forged in the fire of consistent action.",
+  "One cycle at a time. One life at a time.",
+  "Deep work is the ultimate competitive advantage of the 21st century.",
+  "Every session is a vote for the person you're becoming.",
+  "Focus is not the absence of distraction — it is the mastery of it.",
+  "Small daily improvements compound into extraordinary long-term results.",
+  "Your future self is watching. Make the decision they'll be proud of.",
+  "The clock does not stop. Neither should your momentum.",
+  "Silence is not empty. It is full of answers.",
+  "Do not wait for inspiration. Begin, and it will follow."
+];
+document.getElementById("quoteText").innerText=quotes[Math.floor(Math.random()*quotes.length)];
+
+function setGoal(){
+  let v=parseInt(document.getElementById("goalInput").value);
+  if(!v||v<=0){showToast("// Enter valid target","var(--np)");return;}
+  goal=v;renderMiniStats();document.getElementById("goalInput").value="";
+  showToast("// Target updated 🎯","var(--ng)");
+}
+function updateStats(minutes){
+  let today=new Date().toDateString();
+  let todayKey=new Date().toISOString().slice(0,10);
+  if(stats.lastDate!==today){stats.today=0;stats.lastDate=today;stats.streak++;}
+  stats.today+=Math.round(minutes);stats.total+=Math.round(minutes);
+  stats.sessions=(stats.sessions||0)+1;
+  stats.week[todayKey]=(stats.week[todayKey]||0)+Math.round(minutes);
+  saveCurrentUser();renderMiniStats();renderMiniChart();checkBadges();renderLbDropdown();
+}
+function renderMiniStats(){
+  document.getElementById("ms-streak").innerText=stats.streak||0;
+  document.getElementById("ms-today").innerText=stats.today||0;
+  document.getElementById("ms-total").innerText=stats.total||0;
+  document.getElementById("ms-sessions").innerText=stats.sessions||0;
+  document.getElementById("goal").innerText=goal;
+  let pct=Math.min(100,Math.floor(((stats.today||0)/goal)*100));
+  document.getElementById("goalProgress").innerText=pct+(pct>=100?" 🔥":"") +"%";
+  document.getElementById("goalBar").style.width=pct+"%";
+}
+function renderMiniChart(){
+  const wrap=document.getElementById("miniChart");wrap.innerHTML="";
+  const days=["S","M","T","W","T","F","S"];
+  let dates=[];for(let i=6;i>=0;i--){let d=new Date();d.setDate(d.getDate()-i);dates.push(d);}
+  let vals=dates.map(d=>({d,v:stats.week[d.toISOString().slice(0,10)]||0}));
+  let max=Math.max(...vals.map(x=>x.v),30);
+  vals.forEach(({d,v})=>{
+    let b=document.createElement("div");b.className="mc-bar";
+    b.style.height=Math.max(3,Math.round((v/max)*46))+"px";
+    b.innerHTML=`<div class="mc-tip">${v}m</div>`;
+    wrap.appendChild(b);
+  });
+}
+
+/* ── BELL ── */
+function playBell(){
+  try{
+    const ctx=getCtx();
+    [[880,.5,2.5],[1100,.3,2],[1320,.18,1.5]].forEach(([freq,vol,dur],i)=>{
+      setTimeout(()=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.type="sine";o.frequency.value=freq;
+        g.gain.setValueAtTime(0,ctx.currentTime);
+        g.gain.linearRampToValueAtTime(vol*.6,ctx.currentTime+0.015);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+        o.start(ctx.currentTime);o.stop(ctx.currentTime+dur+.05);
+      },i*380);
+    });
+  }catch(e){}
+}
+
+function startTimer(){
+  if(isRunning)return;isRunning=true;endTime=Date.now()+timeLeft*1000;
+  function loop(){
+    if(!isRunning)return;
+    let diff=Math.floor((endTime-Date.now())/1000);
+    timeLeft=diff>0?diff:0;updateDisplay();
+    if(timeLeft<=0){
+      isRunning=false;
+      if(currentMode==="pomodoro")updateStats(totalTime/60);
+      if(cfg.alarm)playBell();
+      if(cfg.notif&&Notification.permission==="granted")new Notification("Lunovix — Pomodo Focus",{body:"Cycle complete 🚀"});
+      const btn=document.getElementById("startBtn");
+      const r=btn.getBoundingClientRect();
+      burst(r.left+r.width/2,r.top+r.height/2,currentMode==="pomodoro"?"#00ff9f":"#00e5ff");
+      showToast("// Neural cycle complete 🚀","var(--ng)");
+      document.getElementById("quoteText").innerText=quotes[Math.floor(Math.random()*quotes.length)];
+      const tel=document.getElementById("timer");tel.classList.add("pulse");setTimeout(()=>tel.classList.remove("pulse"),500);
+      if(cfg.autobreak)setTimeout(nextFlow,800);
+    }else{requestAnimationFrame(loop);}
+  }
+  requestAnimationFrame(loop);
+}
+function pauseTimer(){isRunning=false;showToast("// Session suspended","var(--dim)");}
+function resetTimer(){pauseTimer();setMode(currentMode);}
+function toggleFocusMode(){document.body.classList.toggle("focus-mode");}
+function updateDisplay(){
+  let m=Math.floor(timeLeft/60),s=timeLeft%60;
+  document.getElementById("timer").innerText=`${m}:${s<10?"0":""}${s}`;
+  document.getElementById("bar").style.width=((totalTime-timeLeft)/totalTime*100)+"%";
+}
+function setMode(mode){
+  currentMode=mode;
+  document.querySelectorAll(".mode-btn").forEach(b=>b.classList.remove("active"));
+  const dur={pomodoro:cfg.pomodoro*60,short:cfg.short*60,long:cfg.long*60};
+  const lbl={pomodoro:"// Neural Focus Session",short:"// Recovery Sprint",long:"// Extended Recharge"};
+  timeLeft=dur[mode];totalTime=timeLeft;
+  document.getElementById(mode+"Btn").classList.add("active");
+  document.getElementById("sessionLabel").innerText=lbl[mode];
+  updateDisplay();
+}
+function nextFlow(){
+  if(!isBreak){isBreak=true;timeLeft=cfg.short*60;totalTime=timeLeft;showToast("☕ Recovery initiated");updateDisplay();if(cfg.autobreak)startTimer();}
+  else{isBreak=false;currentTaskIndex++;if(currentTaskIndex<tasks.length)startTask(currentTaskIndex);else showToast("🎉 All missions complete!");}
+}
+
+/* ── TASKS ── */
+let tasks=JSON.parse(localStorage.getItem("tasks"))||[];
+function addTask(){
+  let name=document.getElementById("taskName").value.trim();
+  let time=parseInt(document.getElementById("taskTime").value);
+  if(!name||!time){showToast("// Enter name & duration","var(--np)");return;}
+  tasks.push({name,time});localStorage.setItem("tasks",JSON.stringify(tasks));
+  document.getElementById("taskName").value="";document.getElementById("taskTime").value="";
+  renderTasks();showToast("// Mission deployed ✓","var(--ng)");
+}
+function renderTasks(){
+  let list=document.getElementById("taskList");list.innerHTML="";let total=0;
+  tasks.forEach((t,i)=>{
+    total+=t.time;let div=document.createElement("div");
+    div.className="task"+(i===currentTaskIndex?" active-task":"");
+    div.innerHTML=`<span>${t.name} <span style="color:var(--dim)">(${t.time}m)</span></span>
+      <div class="task-btns"><button class="tbtn-play" onclick="startTask(${i})">▶</button><button class="tbtn-del" onclick="deleteTask(${i})">✕</button></div>`;
+    list.appendChild(div);
+  });
+  document.getElementById("total").innerText="Queue: "+total+" min";
+}
+function deleteTask(i){tasks.splice(i,1);localStorage.setItem("tasks",JSON.stringify(tasks));renderTasks();}
+function startTask(i){
+  currentTaskIndex=i;isBreak=false;timeLeft=tasks[i].time*60;totalTime=timeLeft;
+  updateDisplay();startTimer();
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("panel-timer").classList.add("active");
+  document.querySelectorAll(".nav-tab")[0].classList.add("active");
+}
+
+/* ── BADGES ── */
+const BADGES=[
+  {id:"first",icon:"🍅",name:"First Cycle",desc:"1 session"},
+  {id:"five",icon:"🔥",name:"Ignition",desc:"5 sessions"},
+  {id:"twenty",icon:"⚡",name:"Surge",desc:"20 sessions"},
+  {id:"streak3",icon:"📅",name:"3-Day Vector",desc:"3-day streak"},
+  {id:"streak7",icon:"🗓️",name:"Week Warrior",desc:"7-day streak"},
+  {id:"streak30",icon:"🏆",name:"Iron Discipline",desc:"30-day streak"},
+  {id:"hour1",icon:"⏳",name:"First Hour",desc:"60 min total"},
+  {id:"hour10",icon:"💎",name:"Decade",desc:"600 min total"},
+  {id:"hour50",icon:"👑",name:"Neural Legend",desc:"3000 min"},
+  {id:"goal1",icon:"🎯",name:"Target Hit",desc:"Daily goal met"},
+  {id:"focus",icon:"🧘",name:"Deep Vector",desc:"60 min today"},
+  {id:"night",icon:"🌙",name:"Night Protocol",desc:"3+ sessions"},
+];
+const bChecks={
+  first:()=>stats.sessions>=1,five:()=>stats.sessions>=5,twenty:()=>stats.sessions>=20,
+  streak3:()=>stats.streak>=3,streak7:()=>stats.streak>=7,streak30:()=>stats.streak>=30,
+  hour1:()=>stats.total>=60,hour10:()=>stats.total>=600,hour50:()=>stats.total>=3000,
+  goal1:()=>stats.today>=goal&&goal>0,focus:()=>stats.today>=60,night:()=>stats.sessions>=3,
+};
+let unlocked=[],newlyUnlocked=[];
+function checkBadges(){
+  let changed=false;
+  BADGES.forEach(b=>{
+    if(!unlocked.includes(b.id)&&bChecks[b.id]()){unlocked.push(b.id);newlyUnlocked.push(b.id);changed=true;setTimeout(()=>showToast(`🏅 ${b.name} unlocked!`,"var(--ny)"),500);}
+  });
+  if(changed){saveCurrentUser();renderBadges();}
+}
+function renderBadges(){
+  const grid=document.getElementById("badgesGrid");grid.innerHTML="";
+  BADGES.forEach(b=>{
+    let div=document.createElement("div");
+    div.className="badge"+(unlocked.includes(b.id)?" unlocked":"")+(newlyUnlocked.includes(b.id)?" show-new":"");
+    div.innerHTML=`<div class="b-icon">${b.icon}</div><div class="b-name">${b.name}</div><div class="b-desc">${b.desc}</div><div class="b-new">NEW</div>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ── LEADERBOARD DROPDOWN ── */
+function toggleLbDropdown(){
+  document.getElementById("lbDropdown").classList.toggle("open");
+}
+document.addEventListener("click",e=>{
+  if(!document.getElementById("lbTrigger")?.contains(e.target))
+    document.getElementById("lbDropdown")?.classList.remove("open");
+});
+function renderLbDropdown(){
+  const users=getUsers();
+  let entries=Object.entries(users).map(([u,d])=>({username:u,name:d.name||u,total:(d.stats&&d.stats.total)||0}));
+  const demos=[
+    {username:"_d1",name:"ShadowCoder",total:2840},
+    {username:"_d2",name:"FocusPhantom",total:1920},
+    {username:"_d3",name:"NeuralNinja",total:1340},
+    {username:"_d4",name:"ByteMonk",total:880},
+    {username:"_d5",name:"PixelSage",total:560},
+  ];
+  demos.forEach(d=>{if(!entries.find(e=>e.username===d.username))entries.push(d);});
+  entries.sort((a,b)=>b.total-a.total);
+  const myIdx=entries.findIndex(e=>e.username===currentUser);
+  const myRank=myIdx>=0?myIdx+1:"?";
+  document.getElementById("myRankDisplay").innerText="#"+myRank;
+  const list=document.getElementById("lbDropList");list.innerHTML="";
+  const medals=["🥇","🥈","🥉"];
+  entries.slice(0,6).forEach((e,i)=>{
+    let row=document.createElement("div");
+    row.className="lb-drop-row"+(e.username===currentUser?" me":"");
+    row.innerHTML=`<span class="lb-drop-rank">${i<3?medals[i]:"#"+(i+1)}</span><span class="lb-drop-name">${e.name}${e.username===currentUser?" ★":""}</span><span class="lb-drop-score">${e.total}m</span>`;
+    list.appendChild(row);
+  });
+  if(myIdx>=6){
+    let row=document.createElement("div");row.className="lb-drop-row me";
+    row.innerHTML=`<span class="lb-drop-rank">#${myIdx+1}</span><span class="lb-drop-name">${entries[myIdx].name} ★ (you)</span><span class="lb-drop-score">${entries[myIdx].total}m</span>`;
+    list.appendChild(row);
+  }
+}
+
+/* ── AUDIO ENGINE ── */
+let audioCtx=null,masterGain=null,currentSoundNodes=[],currentSoundType=null;
+let pianoInterval=null,interstellarInterval=null;
+function getCtx(){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(!masterGain){masterGain=audioCtx.createGain();masterGain.gain.value=.55;masterGain.connect(audioCtx.destination);}
+  return audioCtx;
+}
+function mkNoise(ctx,dur=3,amp=.26){
+  let buf=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate);
+  let d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*amp;
+  let src=ctx.createBufferSource();src.buffer=buf;src.loop=true;return src;
+}
+function createRain(ctx){let s=mkNoise(ctx,3,.25);let f=ctx.createBiquadFilter();f.type="bandpass";f.frequency.value=2200;f.Q.value=.5;s.connect(f);f.connect(masterGain);s.start();return[s];}
+function createWhite(ctx){let s=mkNoise(ctx,2,.35);s.connect(masterGain);s.start();return[s];}
+function createLofi(ctx){
+  let o1=ctx.createOscillator();o1.frequency.value=220;o1.type="sawtooth";
+  let o2=ctx.createOscillator();o2.frequency.value=329.6;o2.type="sawtooth";
+  let g1=ctx.createGain();g1.gain.value=.04;let g2=ctx.createGain();g2.gain.value=.03;
+  let filt=ctx.createBiquadFilter();filt.type="lowpass";filt.frequency.value=900;
+  let lfo=ctx.createOscillator();lfo.frequency.value=.12;let lg=ctx.createGain();lg.gain.value=200;
+  lfo.connect(lg);lg.connect(filt.frequency);
+  let ns=mkNoise(ctx,2,.01);
+  o1.connect(g1);o2.connect(g2);g1.connect(filt);g2.connect(filt);filt.connect(masterGain);ns.connect(masterGain);
+  o1.start();o2.start();lfo.start();ns.start();return[o1,o2,lfo,ns];
+}
+function createForest(ctx){let s=mkNoise(ctx,4,.08);let f1=ctx.createBiquadFilter();f1.type="bandpass";f1.frequency.value=700;f1.Q.value=.27;let f2=ctx.createBiquadFilter();f2.type="highshelf";f2.frequency.value=3500;f2.gain.value=7;s.connect(f1);f1.connect(f2);f2.connect(masterGain);s.start();return[s];}
+
+/* PIANO NOTE */
+function pianoNote(ctx,freq,t,dur,vol=.12){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(masterGain);o.type="sine";o.frequency.value=freq;
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.start(t);o.stop(t+dur+.05);
+}
+const PIANO_NOTES=[261.6,293.7,329.6,349.2,392,440,493.9,523.3];
+function createPiano(ctx){
+  function play(){pianoNote(ctx,PIANO_NOTES[Math.floor(Math.random()*PIANO_NOTES.length)],ctx.currentTime,1.8,.11);if(Math.random()>.5)pianoNote(ctx,PIANO_NOTES[Math.floor(Math.random()*PIANO_NOTES.length)]*.5,ctx.currentTime+.08,2.2,.06);}
+  play();pianoInterval=setInterval(play,2200);return[];
+}
+
+/* INTERSTELLAR — Hans Zimmer inspired organ */
+// Uses slow-building layered organ tones in D minor, long sustains, deep reverb simulation
+const IS_CHORDS=[
+  [146.8,220,293.7,440],   // D minor spread
+  [174.6,261.6,349.2,523.3], // F major
+  [130.8,196,261.6,392],   // C minor
+  [164.8,246.9,329.6,493.9], // E minor
+  [138.6,207.7,277.2,415.3], // C# minor
+];
+let isChordIdx=0;
+function createInterstellar(ctx){
+  // Drone bass — like organ pedal
+  const drone=ctx.createOscillator();
+  const droneGain=ctx.createGain();
+  drone.type="sine";drone.frequency.value=36.7; // low D
+  droneGain.gain.value=0.08;
+  drone.connect(droneGain);droneGain.connect(masterGain);drone.start();
+
+  // Slowly evolving chord pads
+  function playChord(){
+    const chord=IS_CHORDS[isChordIdx%IS_CHORDS.length];
+    chord.forEach((f,i)=>{
+      // Layered oscillator types for organ texture
+      ["sine","triangle"].forEach((type,j)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(masterGain);
+        o.type=type;o.frequency.value=f*(j===1?2:1);
+        const vol=j===0?.065:.025;
+        const t=ctx.currentTime+i*.12;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(vol,t+1.2); // slow attack
+        g.gain.setValueAtTime(vol,t+4);
+        g.gain.linearRampToValueAtTime(0,t+7.5);  // long release
+        o.start(t);o.stop(t+8);
+      });
+    });
+    // high shimmer
+    const shimFreqs=[chord[2]*2,chord[3]*2];
+    shimFreqs.forEach(f=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(masterGain);
+      o.type="sine";o.frequency.value=f;
+      const t=ctx.currentTime+.5;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.018,t+1.5);
+      g.gain.exponentialRampToValueAtTime(.001,t+7);
+      o.start(t);o.stop(t+8);
+    });
+    isChordIdx++;
+  }
+  playChord();
+  interstellarInterval=setInterval(playChord,7500);
+  return[drone];
+}
+
+function toggleSound(type){
+  let ctx=getCtx();if(ctx.state==="suspended")ctx.resume();
+  const allBtns=document.querySelectorAll(".mini-sb,.sound-btn");
+  if(currentSoundType===type){stopSound();return;}
+  stopSound();currentSoundType=type;
+  if(type==="rain")currentSoundNodes=createRain(ctx);
+  else if(type==="lofi")currentSoundNodes=createLofi(ctx);
+  else if(type==="white")currentSoundNodes=createWhite(ctx);
+  else if(type==="forest")currentSoundNodes=createForest(ctx);
+  else if(type==="piano")currentSoundNodes=createPiano(ctx);
+  else if(type==="interstellar")currentSoundNodes=createInterstellar(ctx);
+  const btn=document.getElementById("snd-"+type);
+  if(btn)btn.classList.add("playing");
+  showToast("// "+type[0].toUpperCase()+type.slice(1)+" active 🎵","var(--npu)");
+}
+function stopSound(){
+  if(pianoInterval){clearInterval(pianoInterval);pianoInterval=null;}
+  if(interstellarInterval){clearInterval(interstellarInterval);interstellarInterval=null;}
+  currentSoundNodes.forEach(n=>{try{n.stop();}catch(e){}});
+  currentSoundNodes=[];currentSoundType=null;
+  document.querySelectorAll(".mini-sb,.sound-btn").forEach(b=>b.classList.remove("playing"));
+}
+function setVolume(v){if(masterGain)masterGain.gain.value=v/100;document.getElementById("volVal").innerText=v+"%";}
+
+/* ── LUNA AI ── */
+function lunaGreet(){
+  const users=getUsers();
+  const name=currentUser&&users[currentUser]?users[currentUser].name:currentUser||"Operator";
+  addLunaMsg(`Greetings, ${name}. I'm Luna — your AI focus architect. I'm here to help you build schedules, stay motivated, and maximize your cognitive output. What are we working on today?`);
+}
+function addLunaMsg(text){
+  const wrap=document.getElementById("lunaMessages");
+  document.getElementById("typingInd").style.display="none";
+  const div=document.createElement("div");div.className="msg luna-m";
+  div.innerHTML=`<div class="ms">LUNA</div>${text}`;
+  wrap.appendChild(div);wrap.scrollTop=wrap.scrollHeight;
+}
+function addUserMsg(text){
+  const wrap=document.getElementById("lunaMessages");
+  const div=document.createElement("div");div.className="msg user-m";
+  div.innerHTML=`<div class="ms">YOU</div>${text}`;
+  wrap.appendChild(div);wrap.scrollTop=wrap.scrollHeight;
+}
+function quickMsg(msg){document.getElementById("chatInput").value=msg;sendMsg();}
+function sendMsg(){
+  const inp=document.getElementById("chatInput");
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value="";addUserMsg(msg);
+  document.getElementById("typingInd").style.display="flex";
+  document.getElementById("lunaMessages").scrollTop=99999;
+  setTimeout(()=>addLunaMsg(getLunaResponse(msg)),800+Math.random()*500);
+}
+function getLunaResponse(msg){
+  const m=msg.toLowerCase();
+  const users=getUsers();
+  const name=currentUser&&users[currentUser]?users[currentUser].name:currentUser||"Operator";
+  if(m.includes("motivat")||m.includes("inspire")||m.includes("boost")){
+    const r=[
+      `${name}, every elite performer you admire built their skill through thousands of sessions they didn't feel like doing. Today's session is one of those. Start the timer. The feeling follows the action.`,
+      `Your brain predicts resistance. Prove it wrong in the first 5 minutes — the momentum carries you the rest of the way. ENGAGE the cycle.`,
+      `Every minute you focus today is compound interest in the bank of your future self. The returns aren't visible yet, but they are accumulating. Trust the process.`,
+      `Discipline is not about feeling ready. It's about acting despite not feeling ready. The person you want to become is built in sessions exactly like this one.`
+    ];
+    return r[Math.floor(Math.random()*r.length)];
+  }
+  if(m.includes("schedule")||m.includes("study plan")||m.includes("time plan")||m.includes("time block")){
+    return `Here's a high-performance daily framework, ${name}:\n\n<strong>⚡ Morning (6–9 AM)</strong>\n• 6:00 — Physical activation\n• 7:00–9:00 — Deep Focus Block #1 (hardest task)\n\n<strong>🧠 Core Work (9 AM–1 PM)</strong>\n• 2× Pomodoro cycles + 15-min Recharge\n• Focus Block #2\n\n<strong>⚡ Afternoon (2–6 PM)</strong>\n• Deep Focus Block #3\n• 4:00 — Physical reset\n• Admin + communication tasks\n\n<strong>🌙 Evening (7–10 PM)</strong>\n• 7:00 — Optional skill development\n• 9:00 — Review tomorrow's missions\n• 9:30 — Digital shutdown\n\n<em>Tell me your specific tasks and I'll build a personalized plan.</em>`;
+  }
+  if(m.includes("pomodoro")||m.includes("technique")||m.includes("how does")){
+    return `The Pomodoro Technique, ${name}:\n\n1. Choose a single task\n2. Set Deep Focus Cycle (25 min)\n3. Work exclusively — zero switching\n4. Bell rings → 5-min Recovery Sprint\n5. After 4 cycles → 15-min Extended Recharge\n\n<strong>Why it works:</strong> Time boxing eliminates open-ended work. Your brain performs better with a defined endpoint. The breaks prevent cognitive fatigue and increase total daily output.\n\n<strong>Advanced:</strong> 8+ cycles/day = elite productivity. Build up from 4 gradually.`;
+  }
+  if(m.includes("interstellar")||m.includes("music")||m.includes("sound")){
+    return `The Interstellar soundscape, ${name}, is inspired by Hans Zimmer's iconic score — built around slow, layered organ tones in D minor with long sustains. It creates a sense of vast depth and forward momentum. I recommend it for your most demanding, sustained focus sessions. Activate it in the Soundscape panel on the right.`;
+  }
+  if(m.includes("my stats")||m.includes("how am i")||m.includes("progress")){
+    return `${name}, your performance report:\n\n• 🍅 Sessions: <strong>${stats.sessions||0}</strong>\n• ⏱ Today: <strong>${stats.today||0} min</strong>\n• 🏆 Total: <strong>${stats.total||0} min</strong>\n• 🔥 Streak: <strong>${stats.streak||0} days</strong>\n• 🏅 Badges: <strong>${unlocked.length}/12</strong>\n\n${stats.streak>7?"Strong streak — protect it.":stats.streak>0?"Streak building. Keep it alive.":"Start your streak today. Day 1 is always available."}`;
+  }
+  if(m.includes("hello")||m.includes("hi")||m==="hey"){return `Hello ${name}! Ready to build something great today? Ask me for motivation, a schedule, time management tips, or Pomodoro guidance.`;}
+  if(m.includes("thank")){return `You're operating well, ${name}. Now back to the mission — the timer is waiting. 🎯`;}
+  const defaults=[
+    `${name}, the core principle: break it into the smallest actionable unit, set a 25-minute timer, and work exclusively on that. Clarity comes from action, not preparation.`,
+    `The highest-leverage move right now, ${name}: reduce options. Decide on one task, set the timer, eliminate every alternative. Decision fatigue kills focus.`,
+    `${name}, from a performance architecture standpoint — identify the single most important output of this session and protect it at all costs. What's the one thing?`
+  ];
+  return defaults[Math.floor(Math.random()*defaults.length)];
+}
+
+/* ── FAQ ── */
+function toggleFaq(el){el.parentElement.classList.toggle("open");}
+
+/* ── INIT ── */
+loadCfg();setMode("pomodoro");renderTasks();
+if(Notification.permission!=="granted")Notification.requestPermission();
+</script>
+</body>
+</html>
